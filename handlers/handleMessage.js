@@ -40,8 +40,8 @@ const handleMessage = async (message, TG_OWNER_ID, tgbot, client) => {
 
     }
 
-    const tgMessage = `From ${chat.isGroup ? `${chat.name} | <a href="https://wa.me/${message.author.split("@")[0]}?chat_id=${message.from.split("@")[0]}&message_id=${message.id.id}">${name}</a>`
-        : `<a href="https://wa.me/'${message.from.split("@")[0]}?chat_id=${message.from.split("@")[0]}&message_id=${message.id.id}">${chat.name}</a>`
+    const tgMessage = `${chat.isGroup ? `${chat.name} | <a href="https://wa.me/${message.author.split("@")[0]}?chat_id=${message.from.split("@")[0]}&message_id=${message.id.id}">${name}</a>`
+        : `<a href="https://wa.me/${message.from.split("@")[0]}?chat_id=${message.from.split("@")[0]}&message_id=${message.id.id}">${chat.name}</a>`
         }. \n${message.body ? `\n${message.body}` : ""}`;
 
     if (message.hasMedia && !chat.isMuted) {

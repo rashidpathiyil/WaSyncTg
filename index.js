@@ -2,14 +2,14 @@ const qrcode = require("qrcode-terminal");
 const fs = require("fs");
 require("dotenv").config();
 var QRCode = require("qrcode");
-const {Client , MessageMedia} = require("whatsapp-web.js");
+const { Client, MessageMedia } = require("whatsapp-web.js");
 const { Telegraf } = require("telegraf");
 const config = require("./config");
 const alive = require('./modules/alive');
 const handleMessage = require("./handlers/handleMessage");
 const handleCreateMsg = require("./handlers/handleCreateMsg");
 const handleTgBot = require("./handlers/handleTgbot");
-const {setHerokuVar , errorMsg} = require("./modules/heroku");
+const { setHerokuVar, errorMsg } = require("./modules/heroku");
 
 const tgbot = new Telegraf(config.TG_BOT_TOKEN);
 
@@ -42,7 +42,7 @@ async function generateQr() {
     await console.log("Kindly check your telegram bot for QR Code.");
     await QRCode.toFile("qr.png", qr);
     await tgbot.telegram.sendPhoto(
-      config.TG_OWNER_ID, { source: "qr.png" } , { caption: "Scan it in within 20 seconds...." }
+      config.TG_OWNER_ID, { source: "qr.png" }, { caption: "Scan it in within 20 seconds...." }
     );
     await qrcode.generate(qr, { small: true });
     setTimeout(() => {
@@ -51,18 +51,18 @@ async function generateQr() {
     }, 90 * 1000);
   });
   client.on("authenticated", async (session) => {
-    if(config.HEROKU_APP_NAME && config.HEROKU_API_KEY){
-      await setHerokuVar('SESSION_DATA' , JSON.stringify(session)).then(result => {
-        if(result.message == errorMsg) 
-          tgbot.telegram.sendMessage(config.TG_OWNER_ID, "`"+JSON.stringify(session)+"`", {parse_mode: "markdown"});
+    if (config.HEROKU_APP_NAME && config.HEROKU_API_KEY) {
+      await setHerokuVar('SESSION_DATA', JSON.stringify(session)).then(result => {
+        if (result.message == errorMsg)
+          tgbot.telegram.sendMessage(config.TG_OWNER_ID, "`" + JSON.stringify(session) + "`", { parse_mode: "markdown" });
       })
     }
     sessionData = await session;
-    await console.log( JSON.stringify(session) + "\n\nCopy above session and set it to heroku vars as SESSION_DATA" );
+    await console.log(JSON.stringify(session) + "\n\nCopy above session and set it to heroku vars as SESSION_DATA");
     await fs.writeFileSync("session.json", JSON.stringify(session));
   });
   client.on("logout", () => {
-    console.log( "Looks like you've been logged out. Please generate session again." );
+    console.log("Looks like you've been logged out. Please generate session again.");
     if (fs.existsSync("session.json")) fs.unlinkSync("session.json");
   });
 }
@@ -72,60 +72,64 @@ if (!sessionData) {
   generateQr();
 } else {
   console.log("Session data found. Logging in....");
-  tgbot.telegram.sendMessage(config.TG_OWNER_ID, "Session data found. Logging in....", {disable_notification: true});
+  tgbot.telegram.sendMessage(config.TG_OWNER_ID, "Session data found. Logging in....", { disable_notification: true });
 }
 
-client.on("auth_failure" , reason => {
-  if(fs.existsSync('session.json')) fs.unlinkSync('session.json')
+client.on("auth_failure", reason => {
+  if (fs.existsSync('session.json')) fs.unlinkSync('session.json')
   const message = 'Failed to authenticate the client. Please fill env var again or generate session.json again. Generating session data again...';
   console.log(message);
-  tgbot.telegram.sendMessage(config.TG_OWNER_ID , message ,
-    {disable_notification: true})
+  tgbot.telegram.sendMessage(config.TG_OWNER_ID, message,
+    { disable_notification: true })
   generateQr();
 })
 
 client.on("ready", () => {
-  const message = "Successfully logged in. Ready to rock!";
+  const message = "Successfully logged in.";
   console.log(message);
-  tgbot.telegram.sendMessage( config.TG_OWNER_ID, message, {disable_notification: true});
+  tgbot.telegram.sendMessage(config.TG_OWNER_ID, message, { disable_notification: true });
   if (fs.existsSync("qr.png")) fs.unlinkSync("qr.png");
 });
 // Telegram Bot
 tgbot.start(ctx => ctx.replyWithMarkdown(`Hey **${ctx.message.from.first_name}**, Welcome! \nI can notify you about new messages of WhatsApp. \n\nPowered by [WhatsGram](https://github.com/WhatsGram/WhatsGram).`,
-  {disable_web_page_preview: true,
-   reply_markup:{
-    inline_keyboard: [[{text:'WhatsGram Repo', url:'https://github.com/WhatsGram/WhatsGram'},{text:'Support Group', url:'https://t.me/assupportchat'}],
-                      [{text:'Developer', url:'https://github.com/AffanTheBest'}, {text:'Donate', url:'https://ko-fi.com/affanthebest'}]]
-  }}
+  {
+    disable_web_page_preview: true,
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Support', url: 'https://t.me/visualout' }, { text: 'Developer', url: 'https://t.me/toRashid' }],
+      [{ text: 'Donate', url: 'https://upayi.me/visualout@ybl' }]]
+    }
+  }
 ));
 tgbot.command('donate', ctx => {
-  ctx.replyWithMarkdown('Thank you for showing intrest in donating! \nYou can donate me using following methods 👇\n\n*UPI Address*: `siddiquiaffan201@okaxis` \n\nOr you can use following links.',
-  {disable_web_page_preview: true,
-   reply_markup:{
-     inline_keyboard: [[{text: 'Ko-fi', url: 'https://ko-fi.com/affanthebest'}, {text: 'Paypal', url: 'https://paypal.me/affanthebest'}]]
-  }})
+  ctx.replyWithMarkdown('Thank you for showing interest in donating! \nYou can donate me using following methods 👇\n\n*UPI Address*: `visualout@ybl` \n\nOr you can use following link.',
+    {
+      disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: [[{ text: 'UPI', url: 'https://upayi.me/visualout@ybl' }]]
+      }
+    })
 });
 
 tgbot.on("message", (ctx) => {
-  handleTgBot(ctx , client , MessageMedia);
+  handleTgBot(ctx, client, MessageMedia);
 });
 
 client.on("message", async (message) => {
-  handleMessage(message , config.TG_OWNER_ID , tgbot, client);
+  handleMessage(message, config.TG_OWNER_ID, tgbot, client);
 });
 
-client.on('message_create' , async (msg) => {
+client.on('message_create', async (msg) => {
   if (msg.body == "!alive") { // Alive command
     msg.delete(true)
     var aliveMsgData = await alive(await client.info.getBatteryStatus(), client.info.phone)
     client.sendMessage(msg.to, new MessageMedia(aliveMsgData.mimetype, aliveMsgData.data, aliveMsgData.filename), { caption: aliveMsgData.startMessage })
-  }else{
-    handleCreateMsg(msg , client , MessageMedia);
+  } else {
+    handleCreateMsg(msg, client, MessageMedia);
   }
 })
 
 client.on("disconnect", (issue) => {
-  console.log( "WhatsApp has been disconnected due to" + issue + ". Please restart your dyno or do npm start." );
+  console.log("WhatsApp has been disconnected due to" + issue + ". Please restart your dyno or do npm start.");
 });
 
 tgbot.launch();

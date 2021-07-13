@@ -91,7 +91,7 @@ client.on("ready", () => {
   if (fs.existsSync("qr.png")) fs.unlinkSync("qr.png");
 });
 // Telegram Bot
-tgbot.start(ctx => ctx.replyWithMarkdown(`Hey **${ctx.message.from.first_name}**, Welcome! \nI can notify you about new messages of WhatsApp. \n\nPowered by [WhatsGram](https://github.com/WhatsGram/WhatsGram).`,
+tgbot.start(ctx => ctx.replyWithMarkdown(`Hey **${ctx.message.from.first_name}**, Welcome! \nI can connect your Telegram with WhatsApp. \n\nPowered by [Visualout](https://www.visualout.com).`,
   {
     disable_web_page_preview: true,
     reply_markup: {
